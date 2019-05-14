@@ -33,9 +33,17 @@ cleaner="$(cat /var/plexguide/cloneclean)"
 
 dir=$(dirname $0)
 
-for f in "$dir"/premove/*.sh; do  # or wget-*.sh instead of *.sh
-  bash "$f" -H 
+echo "" >> /var/plexguide/logs/pgmove.log
+echo "Starting premove scripts" >> /var/plexguide/logs/pgmove.log
+echo "----------------------------" >> /var/plexguide/logs/pgmove.log
+
+for f in "$dir"/premove/*.sh; do
+  echo "Running $f now" >> /var/plexguide/logs/pgmove.log
+  bash "$f" -H >> /var/plexguide/logs/pgmove.log
 done
+
+
+echo "----------------------------" >> /var/plexguide/logs/pgmove.log
 
 rclone moveto "{{hdpath}}/downloads/" "{{hdpath}}/move/" \
 --config /opt/appdata/plexguide/rclone.conf \
@@ -73,8 +81,13 @@ rclone move "{{hdpath}}/move/" "{{type}}:/" \
 --exclude="**handbrake**" --exclude="**bazarr**" \
 --exclude="**ignore**"  --exclude="**inProgress**"
 
-for f in "$dir"/postmove/*.sh; do  # or wget-*.sh instead of *.sh
-  bash "$f" -H 
+echo "" >> /var/plexguide/logs/pgmove.log
+echo "Starting postmove scripts" >> /var/plexguide/logs/pgmove.log
+echo "----------------------------" >> /var/plexguide/logs/pgmove.log
+
+for f in "$dir"/postmove/*.sh; do
+  echo "Running $f now" >> /var/plexguide/logs/pgmove.log
+  bash "$f" -H >> /var/plexguide/logs/pgmove.log
 done
 
 sleep 5
