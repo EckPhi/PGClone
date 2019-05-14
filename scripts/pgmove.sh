@@ -33,16 +33,6 @@ cleaner="$(cat /var/plexguide/cloneclean)"
 
 dir=$(dirname $0)
 
-echo "" >> /var/plexguide/logs/pgmove.log
-echo "Starting premove scripts" >> /var/plexguide/logs/pgmove.log
-echo "----------------------------" >> /var/plexguide/logs/pgmove.log
-
-for f in "$dir"/premove/*.sh; do
-  echo "Running $f now" >> /var/plexguide/logs/pgmove.log
-  bash "$f" -H >> /var/plexguide/logs/pgmove.log
-done
-
-
 echo "----------------------------" >> /var/plexguide/logs/pgmove.log
 
 rclone moveto "{{hdpath}}/downloads/" "{{hdpath}}/move/" \
@@ -62,32 +52,45 @@ rclone moveto "{{hdpath}}/downloads/" "{{hdpath}}/move/" \
 chown -R 1000:1000 "{{hdpath}}/move"
 chmod -R 775 "{{hdpath}}/move"
 
-rclone move "{{hdpath}}/move/" "{{type}}:/" \
---config /opt/appdata/plexguide/rclone.conf \
---log-file=/var/plexguide/logs/pgmove.log \
---log-level INFO --stats 5s --stats-file-name-length 0 \
---bwlimit {{bandwidth.stdout}}M \
---tpslimit 6 \
---checkers=16 \
---max-size=300G \
---drive-chunk-size={{vfs_dcs}} \
---exclude="**_HIDDEN~" --exclude=".unionfs/**" \
---exclude='**partial~' --exclude=".unionfs-fuse/**" \
---exclude=".fuse_hidden**" \
---exclude="**sabnzbd**" --exclude="**nzbget**" \
---exclude="**qbittorrent**" --exclude="**rutorrent**" \
---exclude="**deluge**" --exclude="**transmission**" \
---exclude="**jdownloader**" --exclude="**makemkv**" \
---exclude="**handbrake**" --exclude="**bazarr**" \
---exclude="**ignore**"  --exclude="**inProgress**"
+find "{{hdpath}}/move/" -type f ! -iname "**_HIDDEN~" ! -ipath ".unionfs/**" \
+   ! -iname '**partial~' ! -ipath ".unionfs-fuse/**" \
+   ! -iname ".fuse_hidden**" \
+   ! -iname "**sabnzbd**" ! -iname "**nzbget**" \
+   ! -iname "**qbittorrent**" ! -iname "**rutorrent**" \
+   ! -iname "**deluge**" ! -iname "**transmission**" \
+   ! -iname "**jdownloader**" ! -iname "**makemkv**" \
+   ! -iname "**handbrake**" ! -iname "**bazarr**" \
+   ! -iname "**ignore**"  ! -iname "**inProgress**" -print0 | while read -d $'\0' file
+do
 
-echo "" >> /var/plexguide/logs/pgmove.log
-echo "Starting postmove scripts" >> /var/plexguide/logs/pgmove.log
-echo "----------------------------" >> /var/plexguide/logs/pgmove.log
+   echo "" >> /var/plexguide/logs/pgmove.log
+   echo "Starting premove scripts" >> /var/plexguide/logs/pgmove.log
+   echo "----------------------------" >> /var/plexguide/logs/pgmove.log
 
-for f in "$dir"/postmove/*.sh; do
-  echo "Running $f now" >> /var/plexguide/logs/pgmove.log
-  bash "$f" -H >> /var/plexguide/logs/pgmove.log
+   for f in "$dir"/premove/*.sh; do
+     echo "Running $f now" >> /var/plexguide/logs/pgmove.log
+     bash "$f" "$file" -H >> /var/plexguide/logs/pgmove.log
+   done
+
+   rel=$(realpath --relative-to {{hdpath}}/move "$file")
+   rclone move "$file" "{{type}}:/$rel" \
+   --config /opt/appdata/plexguide/rclone.conf \
+   --log-file=/var/plexguide/logs/pgmove.log \
+   --log-level INFO --stats 5s --stats-file-name-length 0 \
+   --bwlimit {{bandwidth.stdout}}M \
+   --tpslimit 6 \
+   --checkers=16 \
+   --max-size=300G \
+   --drive-chunk-size={{vfs_dcs}}
+
+   echo "" >> /var/plexguide/logs/pgmove.log
+   echo "Starting postmove scripts" >> /var/plexguide/logs/pgmove.log
+   echo "----------------------------" >> /var/plexguide/logs/pgmove.log
+
+   for f in "$dir"/postmove/*.sh; do
+     echo "Running $f now" >> /var/plexguide/logs/pgmove.log
+     bash "$f" "$file" -H >> /var/plexguide/logs/pgmove.log
+   done
 done
 
 sleep 5
