@@ -29,7 +29,13 @@ sleep 10
 while true
 do
 
-  cleaner="$(cat /var/plexguide/cloneclean)"
+cleaner="$(cat /var/plexguide/cloneclean)"
+
+dir=$(dirname $0)
+
+for f in "$dir"/premove/*.sh; do  # or wget-*.sh instead of *.sh
+  bash "$f" -H 
+done
 
 rclone moveto "{{hdpath}}/downloads/" "{{hdpath}}/move/" \
 --config /opt/appdata/plexguide/rclone.conf \
@@ -66,6 +72,10 @@ rclone move "{{hdpath}}/move/" "{{type}}:/" \
 --exclude="**jdownloader**" --exclude="**makemkv**" \
 --exclude="**handbrake**" --exclude="**bazarr**" \
 --exclude="**ignore**"  --exclude="**inProgress**"
+
+for f in "$dir"/postmove/*.sh; do  # or wget-*.sh instead of *.sh
+  bash "$f" -H 
+done
 
 sleep 5
 
