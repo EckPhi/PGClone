@@ -33,8 +33,6 @@ cleaner="$(cat /var/plexguide/cloneclean)"
 
 dir=$(dirname $0)
 
-echo "----------------------------" >> /var/plexguide/logs/pgmove.log
-
 rclone moveto "{{hdpath}}/downloads/" "{{hdpath}}/move/" \
 --config /opt/appdata/plexguide/rclone.conf \
 --log-file=/var/plexguide/logs/pgmove.log \
@@ -67,7 +65,8 @@ do
    echo "Starting premove scripts" >> /var/plexguide/logs/pgmove.log
    echo "----------------------------" >> /var/plexguide/logs/pgmove.log
 
-   for f in "$dir"/premove/*.sh; do
+   find "$dir/premove/" -type f -iname "*.sh" -print0 | while read -d $'\0' f
+   do
      echo "Running $f now" >> /var/plexguide/logs/pgmove.log
      bash "$f" "$file" -H >> /var/plexguide/logs/pgmove.log
    done
@@ -87,7 +86,8 @@ do
    echo "Starting postmove scripts" >> /var/plexguide/logs/pgmove.log
    echo "----------------------------" >> /var/plexguide/logs/pgmove.log
 
-   for f in "$dir"/postmove/*.sh; do
+   find "$dir/postmove/" -type f -iname "*.sh" -print0 | while read -d $'\0' f
+   do
      echo "Running $f now" >> /var/plexguide/logs/pgmove.log
      bash "$f" "$file" -H >> /var/plexguide/logs/pgmove.log
    done
