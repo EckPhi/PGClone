@@ -29,7 +29,8 @@ sleep 10
 while true
 do
 
-cleaner="$(cat /var/plexguide/cloneclean)"
+  cleaner="$(cat /var/plexguide/cloneclean)"
+  useragent="$(cat /var/plexguide/uagent)"
 
 dir=$(dirname $0)
 
@@ -80,7 +81,8 @@ do
    --tpslimit 6 \
    --checkers=16 \
    --max-size=300G \
-   --drive-chunk-size={{vfs_dcs}}
+   --drive-chunk-size={{vfs_dcs}} \
+   --user-agent="$useragent"
 
    echo "" >> /var/plexguide/logs/pgmove.log
    echo "Starting postmove scripts" >> /var/plexguide/logs/pgmove.log
@@ -99,7 +101,7 @@ sleep 5
 find "{{hdpath}}/move/" -mindepth 2 -type d -mmin +2 -empty -exec rm -rf {} \;
 
 # Removes garbage
-find "{{hdpath}}/downloads" -mindepth 2 -type d -cmin +$cleaner -empty -exec rm -rf {} \;
-find "{{hdpath}}/downloads" -mindepth 2 -type f -cmin +$cleaner -size +1M -exec rm -rf {} \;
+find "{{hdpath}}/downloads" -mindepth 2 -type d -cmin +$cleaner $(printf "! -name %s " $(cat /opt/pgclone/functions/exclude)) -empty -exec rm -rf {} \;
+find "{{hdpath}}/downloads" -mindepth 2 -type f -cmin +$cleaner  -size +1M -exec rm -rf {} \;
 
 done
