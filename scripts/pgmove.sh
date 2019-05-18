@@ -29,7 +29,8 @@ sleep 10
 while true
 do
 
-cleaner="$(cat /var/plexguide/cloneclean)"
+  cleaner="$(cat /var/plexguide/cloneclean)"
+  useragent="$(cat /var/plexguide/uagent)"
 
 dir=$(dirname $0)
 
@@ -65,14 +66,10 @@ do
    echo "Starting premove scripts" >> /var/plexguide/logs/pgmove.log
    echo "----------------------------" >> /var/plexguide/logs/pgmove.log
 
-   find "$dir/premove/" -type f -iname "*.sh" -print0 | while read -d $'\0' f
-   do
-     echo "Running $f now" >> /var/plexguide/logs/pgmove.log
-     bash "$f" "$file" -H >> /var/plexguide/logs/pgmove.log
-   done
+   run-parts --verbose --arg="$file" "$dir/premove/" >> /var/plexguide/logs/pgmove.log
 
-   rel=$(realpath --relative-to {{hdpath}}/move "$file")
-   rclone move "$file" "{{type}}:/$rel" \
+   dest=$(dirname $(realpath --relative-to {{hdpath}}/move "$file"))
+   rclone move "$file" "{{type}}:/$dest" \
    --config /opt/appdata/plexguide/rclone.conf \
    --log-file=/var/plexguide/logs/pgmove.log \
    --log-level INFO --stats 5s --stats-file-name-length 0 \
@@ -80,26 +77,23 @@ do
    --tpslimit 6 \
    --checkers=16 \
    --max-size=300G \
-   --drive-chunk-size={{vfs_dcs}}
+   --drive-chunk-size={{vfs_dcs}} \
+   --user-agent="$useragent"
 
    echo "" >> /var/plexguide/logs/pgmove.log
    echo "Starting postmove scripts" >> /var/plexguide/logs/pgmove.log
    echo "----------------------------" >> /var/plexguide/logs/pgmove.log
 
-   find "$dir/postmove/" -type f -iname "*.sh" -print0 | while read -d $'\0' f
-   do
-     echo "Running $f now" >> /var/plexguide/logs/pgmove.log
-     bash "$f" "$file" -H >> /var/plexguide/logs/pgmove.log
-   done
+   run-parts --verbose --arg="$file" "$dir/postmove/" >> /var/plexguide/logs/pgmove.log
 done
 
 sleep 5
 
 # Remove empty directories
-find "{{hdpath}}/move/" -mindepth 2 -type d -mmin +2 -empty -exec rm -rf {} \;
+  find "{{hdpath}}/move/" -mindepth 2 -type d -mmin +2 -empty -exec rm -rf {} \;
 
 # Removes garbage
-find "{{hdpath}}/downloads" -mindepth 2 -type d -cmin +$cleaner -empty -exec rm -rf {} \;
-find "{{hdpath}}/downloads" -mindepth 2 -type f -cmin +$cleaner -size +1M -exec rm -rf {} \;
+  find "{{hdpath}}/downloads" -mindepth 2 -type d -cmin +$cleaner  $(printf "! -name %s " $(cat /opt/pgclone/functions/exclude)) -empty -exec rm -rf {} \;
+  find "{{hdpath}}/downloads" -mindepth 2 -type f -cmin +$cleaner  $(printf "! -name %s " $(cat /opt/pgclone/functions/exclude)) -size +1M -exec rm -rf {} \;
 
 done
