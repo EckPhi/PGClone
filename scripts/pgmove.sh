@@ -66,14 +66,10 @@ do
    echo "Starting premove scripts" >> /var/plexguide/logs/pgmove.log
    echo "----------------------------" >> /var/plexguide/logs/pgmove.log
 
-   find "$dir/premove/" -type f -iname "*.sh" -print0 | while read -d $'\0' f
-   do
-     echo "Running $f now" >> /var/plexguide/logs/pgmove.log
-     bash "$f" "$file" -H >> /var/plexguide/logs/pgmove.log
-   done
+   run-parts --arg="$file" "$dir/premove/" >> /var/plexguide/logs/pgmove.log
 
-   rel=$(realpath --relative-to {{hdpath}}/move "$file")
-   rclone move "$file" "{{type}}:/$rel" \
+   dest=$(dirname $(realpath --relative-to {{hdpath}}/move "$file"))
+   rclone move "$file" "{{type}}:/$dest" \
    --config /opt/appdata/plexguide/rclone.conf \
    --log-file=/var/plexguide/logs/pgmove.log \
    --log-level INFO --stats 5s --stats-file-name-length 0 \
@@ -88,11 +84,7 @@ do
    echo "Starting postmove scripts" >> /var/plexguide/logs/pgmove.log
    echo "----------------------------" >> /var/plexguide/logs/pgmove.log
 
-   find "$dir/postmove/" -type f -iname "*.sh" -print0 | while read -d $'\0' f
-   do
-     echo "Running $f now" >> /var/plexguide/logs/pgmove.log
-     bash "$f" "$file" -H >> /var/plexguide/logs/pgmove.log
-   done
+   run-parts --arg="$file" "$dir/postmove/" >> /var/plexguide/logs/pgmove.log
 done
 
 sleep 5
