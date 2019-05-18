@@ -66,7 +66,7 @@ do
    echo "Starting premove scripts" >> /var/plexguide/logs/pgmove.log
    echo "----------------------------" >> /var/plexguide/logs/pgmove.log
 
-   run-parts --arg="$file" "$dir/premove/" >> /var/plexguide/logs/pgmove.log
+   run-parts --verbose --arg="$file" "$dir/premove/" >> /var/plexguide/logs/pgmove.log
 
    dest=$(dirname $(realpath --relative-to {{hdpath}}/move "$file"))
    rclone move "$file" "{{type}}:/$dest" \
@@ -84,7 +84,7 @@ do
    echo "Starting postmove scripts" >> /var/plexguide/logs/pgmove.log
    echo "----------------------------" >> /var/plexguide/logs/pgmove.log
 
-   run-parts --arg="$file" "$dir/postmove/" >> /var/plexguide/logs/pgmove.log
+   run-parts --verbose --arg="$file" "$dir/postmove/" >> /var/plexguide/logs/pgmove.log
 done
 
 sleep 5
