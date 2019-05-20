@@ -69,7 +69,8 @@ do
 
    run-parts --verbose --arg="$file" --regex='^.*\.sh$' "$dir/premove/" >> /var/plexguide/logs/pgmove.log
 
-   dest=$(dirname $(realpath --relative-to {{hdpath}}/move "$file"))
+   rel_path=$(realpath --relative-to {{hdpath}}/move "$file")
+   dest="${dest%/*}"
    echo "Moveing $file to {{type}}:$dest" >> /var/plexguide/logs/pgmove.log
    rclone move "$file" "{{type}}:/$dest" \
    --config /opt/appdata/plexguide/rclone.conf \
