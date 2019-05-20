@@ -34,7 +34,8 @@ do
 
 dir=$(dirname $0)
 
-rclone moveto "{{hdpath}}/downloads/" "{{hdpath}}/move/" \
+rclone moveto "{{hdpath}}/downloads/" "{{hdpath}}/move/downloads/" \
+--min-age 5d \
 --config /opt/appdata/plexguide/rclone.conf \
 --log-file=/var/plexguide/logs/pgmove.log \
 --log-level ERROR --stats 5s --stats-file-name-length 0 \
