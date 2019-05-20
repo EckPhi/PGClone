@@ -38,6 +38,7 @@ rclone moveto "{{hdpath}}/downloads/" "{{hdpath}}/move/" \
 --config /opt/appdata/plexguide/rclone.conf \
 --log-file=/var/plexguide/logs/pgmove.log \
 --log-level ERROR --stats 5s --stats-file-name-length 0 \
+--min-age 5d \
 --exclude="**_HIDDEN~" --exclude=".unionfs/**" \
 --exclude='**partial~' --exclude=".unionfs-fuse/**" \
 --exclude=".fuse_hidden**" \
