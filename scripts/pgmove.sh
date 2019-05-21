@@ -32,8 +32,6 @@ do
   cleaner="$(cat /var/plexguide/cloneclean)"
   useragent="$(cat /var/plexguide/uagent)"
 
-dir=$(dirname $0)
-
 rclone moveto "{{hdpath}}/downloads/" "{{hdpath}}/move/" \
 --config /opt/appdata/plexguide/rclone.conf \
 --log-file=/var/plexguide/logs/pgmove.log \
@@ -67,7 +65,7 @@ do
    echo "Starting premove scripts" >> /var/plexguide/logs/pgmove.log
    echo "----------------------------" >> /var/plexguide/logs/pgmove.log
 
-   run-parts --verbose --arg="$file" --regex='^.*\.sh$' "$dir/premove/" >> /var/plexguide/logs/pgmove.log
+   run-parts --verbose --arg="$file" --regex='^.*\.sh$' "/opt/pgclone/scripts/premove/" >> /var/plexguide/logs/pgmove.log
 
    rel_path=$(realpath --relative-to {{hdpath}}/move "$file")
    dest="${rel_path%/*}"
@@ -87,7 +85,7 @@ do
    echo "Starting postmove scripts" >> /var/plexguide/logs/pgmove.log
    echo "----------------------------" >> /var/plexguide/logs/pgmove.log
 
-   run-parts --verbose --arg="$file" --regex='^.*\.sh$' "$dir/postmove/" >> /var/plexguide/logs/pgmove.log
+   run-parts --verbose --arg="$file" --regex='^.*\.sh$' "/opt/pgclone/scripts/postmove/" >> /var/plexguide/logs/pgmove.log
 done
 
 sleep 5
