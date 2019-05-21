@@ -15,7 +15,7 @@ fi
 
 touch /var/plexguide/logs/pgmove.log
 
-echo "" >> /var/plexguide/logs/pgmove.log
+echo "" > /var/plexguide/logs/pgmove.log
 echo "" >> /var/plexguide/logs/pgmove.log
 echo "----------------------------" >> /var/plexguide/logs/pgmove.log
 echo "PG Move Log - First Startup" >> /var/plexguide/logs/pgmove.log
